@@ -19,6 +19,8 @@ using MaterialDesignThemes.Wpf;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Documents.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Doobry.Features.QueryDeveloper
 {
@@ -181,19 +183,22 @@ namespace Doobry.Features.QueryDeveloper
                 _activeDocumentQuery?.Item1.Dispose();
 
                 var documentClient = CreateDocumentClient(explicitConnection);
-                var feedOptions = new FeedOptions { MaxItemCount = maxItemCount };
+                
+                var feedOptions = new FeedOptions { MaxItemCount = maxItemCount, PopulateQueryMetrics = true };
                 var documentQuery = documentClient.CreateDocumentQuery(
                     UriFactory.CreateDocumentCollectionUri(explicitConnection.DatabaseId, explicitConnection.CollectionId), query,
                     feedOptions).AsDocumentQuery();
 
                 _activeDocumentQuery = new Tuple<DocumentClient, IDocumentQuery<dynamic>>(documentClient, documentQuery);
 
-                var results =
-                    (await documentQuery.ExecuteNextAsync()).Select((dy, row) => new Result(row, dy.ToString()));
-
+                FeedResponse<dynamic> result = await documentQuery.ExecuteNextAsync();
+                ResultMetrics metadata = new ResultMetrics(result);
+                string metadataText = JsonConvert.SerializeObject(metadata, Formatting.Indented);
+                List<Result> results = result.Select((dy, row) => new Result(row, dy.ToString())).ToList<Result>();
+                results.Add(new Result(results.Count(), metadataText));
                 _fetchMoreCommand.Refresh();
 
-                return new ResultSet(results);
+                return new ResultSet(results, result);
 
             }
             catch (DocumentClientException de)

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Doobry.Infrastructure;
 
+
 namespace Doobry.Features.QueryDeveloper
 {
     public class ResultSetExplorerViewModel : INotifyPropertyChanged
@@ -15,6 +16,7 @@ namespace Doobry.Features.QueryDeveloper
         private int _selectedRow = -1;
         private ResultSet _resultSet;
         private bool _isError;
+        private bool _isQueryDetails;
         private string _error;
 
         public ResultSetExplorerViewModel(ICommand fetchMoreCommand, ICommand editDocumentCommand,
@@ -40,21 +42,26 @@ namespace Doobry.Features.QueryDeveloper
                     if (!string.IsNullOrEmpty(_resultSet.Error))
                     {
                         IsError = true;
+                        IsQueryDetails = false;
                         Error = _resultSet.Error;
                         SelectedRow = -1;
                     }
                     else
                     {
                         IsError = false;
+                        IsQueryDetails = true;
                         Error = null;
                         if (_resultSet.Results.Count > 0)
                             SelectedRow = 0;
                         else
                             SelectedRow = -1;
+
+                        
                     }
                 }
                 else
                     SelectedRow = -1;
+
             }
         }
 
@@ -65,6 +72,12 @@ namespace Doobry.Features.QueryDeveloper
         public ICommand EditDocumentCommand { get; }
 
         public ICommand SaveDocumentCommand { get; }
+
+        public bool IsQueryDetails
+        {
+            get { return _isQueryDetails; }
+            private set { this.MutateVerbose(ref _isQueryDetails, value, RaisePropertyChanged()); }
+        }
 
         public bool IsError
         {

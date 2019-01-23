@@ -58,6 +58,13 @@
                                         CommandParameter="{Binding }">
                                     <materialDesign:PackIcon Kind="Pencil" />
                                 </Button>
+                                <Button Style="{DynamicResource MaterialDesignFlatButton}"
+                                    Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                                    CommandParameter="{Binding }"
+                                    Margin="0 4 0 0" Width="80"
+                                    DockPanel.Dock="Left">
+                                    DETAILS
+                                </Button>
                                 <!--
                                 <Button Style="{DynamicResource MaterialDesignFlatButton}"
                                         Margin="2 0 0 0">

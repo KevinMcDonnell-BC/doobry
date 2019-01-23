@@ -9,12 +9,15 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Azure.Documents.Client;
+using Newtonsoft.Json.Linq;
 
 namespace Doobry.Features.QueryDeveloper
 {
     public class ResultSet
     {        
         private readonly ObservableCollection<Result> _results;
+        private readonly ObservableCollection<FeedResponse<dynamic>> _resultMetadatas;
 
         public ResultSet(IEnumerable<Result> results)
         {            
@@ -22,6 +25,19 @@ namespace Doobry.Features.QueryDeveloper
 
             _results = new ObservableCollection<Result>(results);
             Results = new ReadOnlyObservableCollection<Result>(_results);            
+        }
+
+        public ResultSet(IEnumerable<Result> results, FeedResponse<dynamic> resultMetadatas)
+        {
+            if (results == null) throw new ArgumentNullException(nameof(results));
+
+            _results = new ObservableCollection<Result>(results);
+            Results = new ReadOnlyObservableCollection<Result>(_results);
+
+            if (resultMetadatas == null) throw new ArgumentNullException(nameof(resultMetadatas));
+
+            _resultMetadatas = new ObservableCollection<FeedResponse<dynamic>>(new List<FeedResponse<dynamic>> { resultMetadatas });
+            ResultMetadata = new ResultMetrics(resultMetadatas);
         }
 
         public ResultSet(string error)
@@ -40,6 +56,20 @@ namespace Doobry.Features.QueryDeveloper
         public string Error { get; }
 
         public ReadOnlyObservableCollection<Result> Results { get; }
+        public ResultMetrics ResultMetadata { get; }
+        public string ResultMetadataText {  get
+            {
+                if (_resultMetadatas != null && _resultMetadatas.Count() > 0)
+                {
+                    FeedResponse<dynamic> metadata = _resultMetadatas[0];
+                    ResultMetrics details = new ResultMetrics(metadata);
+                    string resultMetadataText = JsonConvert.SerializeObject(details, Formatting.Indented);
+                    return resultMetadataText;
+                }
+                return "";
+            }
+        }
+
 
         public void Append(IEnumerable<string> results)
         {            

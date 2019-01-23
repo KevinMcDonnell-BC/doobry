@@ -1,3 +1,6 @@
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
 namespace Doobry.Features.QueryDeveloper
 {
     public class Result
@@ -9,7 +12,7 @@ namespace Doobry.Features.QueryDeveloper
             Id = id;
 
             Row = row;
-            Data = data;
+            Data = JValue.Parse(data).ToString(Formatting.Indented);
         }
 
         public DocumentId Id { get; }
